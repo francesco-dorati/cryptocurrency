@@ -1,8 +1,8 @@
 import hashlib, pickle, ecdsa
-from types import WrapperDescriptorType
+# from types import WrapperDescriptorType
 from datetime import datetime
 
-from ecdsa.ecdsa import Signature
+# from ecdsa.ecdsa import Signature
 
 class Transaction:
   def __init__(self, index: int, sender: str, receiver: str, amount: int):
@@ -29,7 +29,7 @@ class Transaction:
     if self.sender != public_key:
       raise Exception("Cannot sign transactions from wallet you don't own.")
     
-    self.signature = sk.sign(self.calculate_hash().encode()) # .encode()
+    self.signature = sk.sign(self.calculate_hash().encode())
 
 
   def verify(self):
@@ -61,7 +61,7 @@ class Block:
     hash.update(format(self.nonce, "b").encode())
     return hash.hexdigest()
 
-  def mine(self, difficulty):
+  def mine(self, difficulty: int):
     while self.hash[:difficulty] != "0" * difficulty:
       self.nonce += 1
       self.hash = self.calculate_hash()
@@ -75,9 +75,9 @@ class Block:
     
 
 class Blockchain:
-  def __init__(self):
-    self.DIFFICULTY = 4
-    self.MINE_REWARD = 500
+  def __init__(self, difficulty: int = 5, reward: int = 500):
+    self.DIFFICULTY = difficulty
+    self.MINE_REWARD = reward
 
     self.chain = [Block(datetime.now(), [], "")]
     self.pending_transactions = []
@@ -85,7 +85,7 @@ class Blockchain:
   def last_block(self) -> Block:
     return self.chain[-1]
 
-  def mine_transactions(self, miner_address):
+  def mine_transactions(self, miner_address: str):
     # create new block and mine it
     block = Block(datetime.now(), self.pending_transactions, self.last_block().hash) 
     block.mine(self.DIFFICULTY)
@@ -100,7 +100,7 @@ class Blockchain:
     index = self.pending_transactions[-1].index + 1
 
     # if mining reward
-    if sender == None and private_key == None:
+    if not sender and not private_key:
       self.pending_transactions.append(Transaction(index, None, receiver, amount))
       return
 
@@ -122,7 +122,7 @@ class Blockchain:
     # push to the blockchain
     self.pending_transactions.append(transaction) 
 
-  def get_balance(self, address) -> int:
+  def get_balance(self, address: str) -> int:
     balance = 0
 
     for block in self.chain:
